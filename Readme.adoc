@@ -1,0 +1,44 @@
+= Websocket support for rumqtt
+
+The following problem arises when enabling websocket support for rumqttc v0.23.0 via feature "websocket":
+
+When enabling websocket support, the rumqtt::v5::EventLoop is not Send anymore.
+When disabling websocket support, the rumqtt::v5::EventLoop is Send.
+
+According to https://docs.rs/rumqttc/latest/rumqttc/struct.EventLoop.html[the documentation], the EventLoop
+should implement the trait Send.
+
+== Error message
+
+The following error message is displayed when compiled with feature "websocket" enabled.
+
+[source, text]
+----
+error: future cannot be sent between threads safely
+--> src\main.rs:24:24
+|
+24  |       tokio::task::spawn(async move {
+|  ________________________^
+25  | |         loop {
+26  | |             match event_loop.poll().await {
+27  | |                 Ok(event) => {
+...   |
+39  | |         }
+40  | |     })
+| |_____^ future created by async block is not `Send`
+|
+= help: the trait `Sync` is not implemented for `(dyn Fn(http::request::Request<()>) -> Pin<Box<(dyn Future<Output = http::request::Request<()>> + 'static)>> + 'static)`
+note: captured value is not `Send`
+--> src\main.rs:26:19
+|
+26  |             match event_loop.poll().await {
+|                   ^^^^^^^^^^ has type `rumqttc::v5::EventLoop` which is not `Send`
+note: required by a bound in `tokio::spawn`
+--> C:\..path..to..\index.crates.io-6f17d22bba15001f\tokio-1.35.0\src\task\spawn.rs:166:21
+|
+164 |     pub fn spawn<F>(future: F) -> JoinHandle<F::Output>
+|            ----- required by a bound in this function
+165 |     where
+166 |         F: Future + Send + 'static,
+|                     ^^^^ required by this bound in `spawn`
+----

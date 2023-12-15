@@ -3,7 +3,10 @@
 The following problem arises when enabling websocket support for rumqttc v0.23.0 via feature "websocket":
 
 When enabling websocket support, the rumqtt::v5::EventLoop is not Send anymore.
+
 When disabling websocket support, the rumqtt::v5::EventLoop is Send.
+
+See Cargo.toml for the settings regarding the features of rumqttc.
 
 According to https://docs.rs/rumqttc/latest/rumqttc/struct.EventLoop.html[the documentation], the EventLoop
 should implement the trait Send.
